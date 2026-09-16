@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Afiliado — Dado Game</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --border: #1e293b;
+            --btn-bg: #0284c7;
+            --btn-hover: #0369a1;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        header h1 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* BOTÃO DISCRETO DO PAINEL ADMIN NO TOPO */
+        .admin-toggle-btn {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 15px;
+        }
+
+        .admin-toggle-btn:hover {
+            background: var(--accent);
+            color: var(--bg-color);
+        }
+
+        /* PAINEL DE CONTROLE (ADMIN) RECOLHÍVEL */
+        .admin-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            display: none; /* Começa fechado de forma discreta */
+        }
+
+        .admin-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .admin-panel h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            grid-column: span 2;
+        }
+
+        .form-group.half {
+            grid-column: span 1;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        input, select {
+            background: #0b0f19;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            padding: 7px;
+            cursor: pointer;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #customCategoryGroup {
+            display: none;
+            grid-column: span 2;
+        }
+
+        .btn-add {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            grid-column: span 2;
+            transition: background 0.2s;
+            margin-top: 5px;
+        }
+
+        .btn-add:hover {
+            background: #16a34a;
+        }
+
+        /* VITRINE DE PRODUTOS */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 20px -3px rgba(56, 189, 248, 0.15);
+        }
+
+        .image-wrapper {
+            width: 100%;
+            height: 180px;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
+        .card-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .category-badge {
+            font-size: 0.75rem;
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 6px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .action-button {
+            display: block;
+            text-align: center;
+            background-color: var(--btn-bg);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .product-card:hover .action-button {
+            background-color: var(--btn-hover);
+        }
+
+        /* Botão de excluir visível apenas no painel aberto */
+        .btn-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .btn-delete:hover { background: var(--danger-hover); }
+
+        .empty-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px;
+            font-size: 1.1rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        /* Modo de visualização limpa para compartilhamento */
+        body.shared-view .admin-toggle-btn {
+            display: none;
+        }
+        body.shared-view .btn-delete {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 Dado Game — Peças e Ferramentas Recomendadas</h1>
+        <p>Catálogo oficial de itens recomendados para bancada e manutenção</p>
+        <button class="admin-toggle-btn" onclick="toggleAdminPanel()">⚙️ Painel Administrativo (Adicionar Produto)</button>
+    </header>
+
+    <!-- PAINEL DE CADASTRO (RECOLHÍVEL) -->
+    <div class="admin-panel" id="adminPanel">
+        <h3>
+            <span>➕ Adicionar Novo Produto</span>
+            <button onclick="toggleAdminPanel()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1.2rem;">✕</button>
+        </h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nome / Título do Produto:</label>
+                <input type="text" id="prodTitle" placeholder="Ex: Fonte de Alimentação PS5 ADP-400">
+            </div>
+            <div class="form-group half">
+                <label>Categoria:</label>
+                <select id="prodCategory" onchange="checkCategory(this)">
+                    <option value="Game">🎮 Game</option>
+                    <option value="Computadores">💻 Computadores</option>
+                    <option value="Memória RAM">🧠 Memória RAM</option>
+                    <option value="HD">💾 HD</option>
+                    <option value="SSD">💽 SSD</option>
+                    <option value="Ferramentas">🛠️ Ferramentas</option>
+                    <option value="Outra">➕ Outra (Digitar manualmente)</option>
+                </select>
+            </div>
+            <!-- Campo extra que aparece apenas se escolher "Outra" -->
+            <div class="form-group" id="customCategoryGroup">
+                <label>Digite o nome da nova categoria:</label>
+                <input type="text" id="customCategoryInput" placeholder="Ex: Acessórios, Placas de Vídeo, etc.">
+            </div>
+            <div class="form-group half">
+                <label>Foto do Produto (Escolher arquivo):</label>
+                <input type="file" id="prodImageFile" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Seu Link de Afiliado (URL do produto):</label>
+                <input type="text" id="prodLink" placeholder="https://s.click.aliexpress.com/e/...">
+            </div>
+            <button class="btn-add" onclick="addProduct()">Salvar e Adicionar Produto</button>
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <button onclick="toggleShareMode()" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔒 Ocultar Painel (Visualização de Cliente)</button>
+        </div>
+    </div>
+
+    <!-- VITRINE DE CARDS -->
+    <div class="container" id="productGrid">
+        <!-- Os produtos cadastrados aparecerão aqui automaticamente -->
+    </div>
+
+    <footer>
+        <p>© 2026 Dado Game — Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('dadogame_products')) || [];
+
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('active');
+        }
+
+        function checkCategory(select) {
+            const customGroup = document.getElementById('customCategoryGroup');
+            if (select.value === 'Outra') {
+                customGroup.style.display = 'flex';
+            } else {
+                customGroup.style.display = 'none';
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('dadogame_products', JSON.stringify(products));
+            renderProducts();
+        }
+
+        function addProduct() {
+            const title = document.getElementById('prodTitle').value.trim();
+            let category = document.getElementById('prodCategory').value;
+            
+            if (category === 'Outra') {
+                const customCat = document.getElementById('customCategoryInput').value.trim();
+                if (!customCat) {
+                    alert('Por favor, digite o nome da nova categoria!');
+                    return;
+                }
+                category = customCat;
+            }
+
+            const link = document.getElementById('prodLink').value.trim();
+            const fileInput = document.getElementById('prodImageFile');
+
+            if (!title || !link) {
+                alert('Por favor, preencha pelo menos o Título e o Link de Afiliado!');
+                return;
+            }
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveNewProductData(title, category, e.target.result, link);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveNewProductData(title, category, 'https://via.placeholder.com/250?text=Sem+Foto', link);
+            }
+        }
+
+        function saveNewProductData(title, category, imageSrc, link) {
+            const newProduct = {
+                id: Date.now(),
+                title: title,
+                category: category,
+                image: imageSrc,
+                link: link
+            };
+
+            products.push(newProduct);
+            saveAndRender();
+
+            // Limpa os campos e fecha o painel
+            document.getElementById('prodTitle').value = '';
+            document.getElementById('prodLink').value = '';
+            document.getElementById('prodImageFile').value = '';
+            document.getElementById('prodCategory').value = 'Game';
+            document.getElementById('customCategoryGroup').style.display = 'none';
+            document.getElementById('customCategoryInput').value = '';
+            toggleAdminPanel();
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja remover este produto?')) {
+                products = products.filter(p => p.id !== id);
+                saveAndRender();
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                grid.innerHTML = `<div class="empty-msg">Nenhum produto cadastrado ainda. Clique em "Painel Administrativo" acima para adicionar o primeiro item!</div>`;
+                return;
+            }
+
+            products.forEach(p => {
+                const card = document.createElement('a');
+                card.href = p.link;
+                card.target = '_blank';
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <button class="btn-delete" onclick="event.preventDefault(); deleteProduct(${p.id})">×</button>
+                    <div class="image-wrapper">
+                        <img src="${p.image}" alt="${p.title}">
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <span class="category-badge">${p.category}</span>
+                            <div class="product-title">${p.title}</div>
+                        </div>
+                        <div class="action-button">Ver Oferta ↗</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleShareMode() {
+            document.body.classList.toggle('shared-view');
+            toggleAdminPanel();
+            alert('Modo Cliente ativado! O botão administrativo foi ocultado. Para reexibi-lo, atualize a página.');
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
